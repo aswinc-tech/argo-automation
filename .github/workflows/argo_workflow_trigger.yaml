@@ -38,7 +38,7 @@ jobs:
         environment: ${{ inputs.environment || 'staging' }}
         auto_deploy_settings: ${{ vars.AUTO_DEPLOY_SETTINGS }}
         log_level: 'info'
-      run: python3 ./scripts/argoworkflows.py
+      run: python3 scripts/argoworkflows.py
       
     - name: Output Results
       run: |
