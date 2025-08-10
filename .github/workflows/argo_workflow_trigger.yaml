@@ -1,0 +1,46 @@
+name: Deploy with Argo Workflows
+
+on:
+  push:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: |
+        pip install argo-workflows requests urllib3
+        
+    - name: Submit Argo Workflow
+      id: argo-submit
+      env:
+        argo_token: ${{ secrets.ARGO_TOKEN }}
+        repo_name: ${{ github.repository }}
+        environment: ${{ inputs.environment || 'staging' }}
+        auto_deploy_settings: ${{ vars.AUTO_DEPLOY_SETTINGS }}
+        log_level: 'info'
+      run: python3 argoworkflows.py
+      
+    - name: Output Results
+      run: |
+        echo "Workflow Name: ${{ steps.argo-submit.outputs.workflow_name }}"
+        echo "Workflow URL: ${{ steps.argo-submit.outputs.workflow_url }}"
